@@ -39,7 +39,7 @@ function findNumericMetric(data, preferredKey = null) {
     }
   }
 
-  // Automatically find a numeric column
+  // Automatically find numeric column
   const keys = Object.keys(rows[0]);
 
   for (const key of keys) {
@@ -66,7 +66,11 @@ function findNumericMetric(data, preferredKey = null) {
   return null;
 }
 
-function findXAxis(data, metricKey, preferredKey = null) {
+function findXAxis(
+  data,
+  metricKey,
+  preferredKey = null
+) {
   const rows = getUsableRows(data);
 
   if (!rows.length) return null;
@@ -109,7 +113,7 @@ function findXAxis(data, metricKey, preferredKey = null) {
 
   if (dateKey) return dateKey;
 
-  // Otherwise find a categorical column
+  // Otherwise find categorical column
   const categoryKey = keys.find((key) => {
     if (key === metricKey) return false;
 
@@ -136,12 +140,16 @@ function findXAxis(data, metricKey, preferredKey = null) {
   return categoryKey || null;
 }
 
-function buildChartData(data, xKey, metricKey) {
+function buildChartData(
+  data,
+  xKey,
+  metricKey
+) {
   const rows = getUsableRows(data);
 
   if (!metricKey) return [];
 
-  // No X axis → show records
+  // No X axis
   if (!xKey) {
     return rows
       .map((row, index) => {
@@ -202,14 +210,17 @@ function buildChartData(data, xKey, metricKey) {
         itemB.sortValue !== null
       ) {
         return (
-          itemA.sortValue - itemB.sortValue
+          itemA.sortValue -
+          itemB.sortValue
         );
       }
 
       return String(labelA).localeCompare(
         String(labelB),
         undefined,
-        { numeric: true }
+        {
+          numeric: true,
+        }
       );
     }
   );
@@ -229,10 +240,8 @@ export default function LineChartCard({
 }) {
   const rows = getUsableRows(data);
 
-  const actualMetricKey = findNumericMetric(
-    rows,
-    metricKey
-  );
+  const actualMetricKey =
+    findNumericMetric(rows, metricKey);
 
   const xKey = findXAxis(
     rows,
@@ -251,71 +260,103 @@ export default function LineChartCard({
     "Value";
 
   return (
-    <div className="w-full">
-      <h2 className="text-xl font-bold mb-6">
-        {xKey
-          ? `${metricLabel} Trend`
-          : `${metricLabel} by Record`}
-      </h2>
+    <div className="bg-white rounded-xl shadow p-4 sm:p-5 lg:p-6 w-full min-w-0 overflow-hidden">
+
+      <div className="mb-4">
+        <h2 className="text-lg sm:text-xl font-bold">
+          {xKey
+            ? `${metricLabel} Trend`
+            : `${metricLabel} by Record`}
+        </h2>
+
+        {xKey && (
+          <p className="text-xs sm:text-sm text-gray-500 mt-1 truncate">
+            Based on {formatColumnLabel(xKey)}
+          </p>
+        )}
+      </div>
 
       {chartData.length === 0 ? (
-        <div className="h-[320px] flex items-center justify-center text-gray-500 text-center px-4">
+        <div className="h-[280px] sm:h-[320px] flex items-center justify-center text-gray-500 text-center px-4">
           No suitable numeric data available
           for the chart.
         </div>
       ) : (
-        <ResponsiveContainer
-          width="100%"
-          height={320}
-        >
-          <LineChart
-            data={chartData}
-            margin={{
-              top: 10,
-              right: 20,
-              left: 10,
-              bottom: 10,
-            }}
+        <div className="w-full min-w-0">
+          <ResponsiveContainer
+            width="100%"
+            height={300}
           >
-            <CartesianGrid strokeDasharray="3 3" />
+            <LineChart
+              data={chartData}
+              margin={{
+                top: 10,
+                right: 10,
+                left: -10,
+                bottom:
+                  chartData.length > 8
+                    ? 35
+                    : 10,
+              }}
+            >
 
-            <XAxis
-              dataKey="label"
-              angle={
-                chartData.length > 8 ? -30 : 0
-              }
-              textAnchor={
-                chartData.length > 8
-                  ? "end"
-                  : "middle"
-              }
-              height={
-                chartData.length > 8 ? 70 : 30
-              }
-            />
+              <CartesianGrid
+                strokeDasharray="3 3"
+              />
 
-            <YAxis />
+              <XAxis
+                dataKey="label"
+                tick={{
+                  fontSize: 11,
+                }}
+                angle={
+                  chartData.length > 8
+                    ? -30
+                    : 0
+                }
+                textAnchor={
+                  chartData.length > 8
+                    ? "end"
+                    : "middle"
+                }
+                height={
+                  chartData.length > 8
+                    ? 60
+                    : 30
+                }
+                interval="preserveStartEnd"
+              />
 
-            <Tooltip
-              formatter={(value) => [
-                Number(value).toLocaleString(
-                  "en-IN"
-                ),
-                metricLabel,
-              ]}
-            />
+              <YAxis
+                tick={{
+                  fontSize: 11,
+                }}
+                width={45}
+              />
 
-            <Line
-              type="monotone"
-              dataKey="value"
-              stroke="#2563eb"
-              strokeWidth={3}
-              dot={{ r: 4 }}
-              activeDot={{ r: 6 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+              <Tooltip
+                formatter={(value) => [
+                  Number(value).toLocaleString(
+                    "en-IN"
+                  ),
+                  metricLabel,
+                ]}
+              />
+
+              <Line
+                type="monotone"
+                dataKey="value"
+                stroke="#2563eb"
+                strokeWidth={3}
+                dot={{ r: 3 }}
+                activeDot={{ r: 6 }}
+              />
+
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
       )}
+
     </div>
   );
 }
