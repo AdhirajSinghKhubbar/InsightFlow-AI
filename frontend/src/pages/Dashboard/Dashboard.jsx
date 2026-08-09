@@ -13,7 +13,6 @@ import {
   FaChartLine,
   FaDatabase,
   FaArrowTrendUp,
-  FaHashtag,
 } from "react-icons/fa6";
 
 export default function Dashboard() {
@@ -21,6 +20,9 @@ export default function Dashboard() {
   const [selectedDataset, setSelectedDataset] = useState(null);
   const [csvData, setCsvData] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Filters
+  const [filters, setFilters] = useState({});
 
   // --------------------------------
   // Fetch datasets
@@ -64,6 +66,25 @@ export default function Dashboard() {
 
     setSelectedDataset(dataset);
     setCsvData(dataset.data || []);
+
+    // Reset filters when dataset changes
+    setFilters({});
+  }
+
+  // --------------------------------
+  // Filter change
+  // --------------------------------
+
+  function handleFilterChange(key, value) {
+    if (key === "__reset__") {
+      setFilters({});
+      return;
+    }
+
+    setFilters((previous) => ({
+      ...previous,
+      [key]: value,
+    }));
   }
 
   // --------------------------------
@@ -72,10 +93,12 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <h1 className="text-3xl font-bold text-blue-600">
-          Loading Dashboard...
-        </h1>
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+        <div className="text-center">
+          <h1 className="text-2xl sm:text-3xl font-bold text-blue-600">
+            Loading Dashboard...
+          </h1>
+        </div>
       </div>
     );
   }
@@ -86,13 +109,13 @@ export default function Dashboard() {
 
   if (!csvData || csvData.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="bg-white p-10 rounded-xl shadow-xl text-center">
-          <h1 className="text-3xl font-bold mb-4">
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-8">
+        <div className="bg-white w-full max-w-lg p-6 sm:p-10 rounded-xl shadow-xl text-center">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-4">
             No Dataset Uploaded
           </h1>
 
-          <p className="text-gray-500">
+          <p className="text-gray-500 text-sm sm:text-base">
             Please upload a CSV file first.
           </p>
         </div>
@@ -133,7 +156,7 @@ export default function Dashboard() {
   });
 
   // --------------------------------
-  // Choose the best numeric column
+  // Choose best numeric column
   // --------------------------------
 
   const preferredNames = [
@@ -150,11 +173,11 @@ export default function Dashboard() {
   ];
 
   let metricColumn = numericColumns.find((column) =>
-    preferredNames.includes(column.toLowerCase().trim())
+    preferredNames.includes(
+      column.toLowerCase().trim()
+    )
   );
 
-  // If no common business metric exists,
-  // use the first numeric column.
   if (!metricColumn && numericColumns.length > 0) {
     metricColumn = numericColumns[0];
   }
@@ -165,31 +188,37 @@ export default function Dashboard() {
 
   if (!metricColumn) {
     return (
-      <div className="min-h-screen bg-gray-100 p-8">
+      <div className="min-h-screen bg-gray-100 px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-4xl font-bold text-blue-600 mb-8">
-            Analytics Dashboard
-          </h1>
+
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-blue-600">
+              Analytics Dashboard
+            </h1>
+          </div>
 
           {datasets.length > 0 && (
-            <DatasetSelector
-              datasets={datasets}
-              selectedId={selectedDataset?._id || ""}
-              onChange={handleDatasetChange}
-            />
+            <div className="mb-6 sm:mb-8">
+              <DatasetSelector
+                datasets={datasets}
+                selectedId={selectedDataset?._id || ""}
+                onChange={handleDatasetChange}
+              />
+            </div>
           )}
 
-          <div className="bg-white rounded-xl shadow-lg p-10 text-center">
-            <h2 className="text-2xl font-bold text-red-600 mb-3">
+          <div className="bg-white rounded-xl shadow-lg p-5 sm:p-8 lg:p-10 text-center">
+
+            <h2 className="text-xl sm:text-2xl font-bold text-red-600 mb-3">
               No Numeric Column Found
             </h2>
 
-            <p className="text-gray-500">
+            <p className="text-gray-500 text-sm sm:text-base">
               Your dataset does not appear to contain a numeric
               column that can be analyzed.
             </p>
 
-            <p className="text-gray-400 mt-3">
+            <p className="text-gray-400 mt-4">
               Available columns:
             </p>
 
@@ -197,12 +226,13 @@ export default function Dashboard() {
               {columns.map((column) => (
                 <span
                   key={column}
-                  className="bg-gray-100 px-3 py-1 rounded-lg text-sm"
+                  className="bg-gray-100 px-3 py-1 rounded-lg text-sm break-all"
                 >
                   {column}
                 </span>
               ))}
             </div>
+
           </div>
         </div>
       </div>
@@ -210,12 +240,40 @@ export default function Dashboard() {
   }
 
   // --------------------------------
+  // APPLY FILTERS
+  // --------------------------------
+
+  const filteredData = csvData.filter((row) => {
+    return Object.entries(filters).every(
+      ([key, selectedValue]) => {
+        if (!selectedValue) return true;
+
+        const rowValue = row?.[key];
+
+        if (
+          rowValue === undefined ||
+          rowValue === null
+        ) {
+          return false;
+        }
+
+        return (
+          String(rowValue).trim() ===
+          String(selectedValue).trim()
+        );
+      }
+    );
+  });
+
+  // --------------------------------
   // Convert selected metric to number
   // --------------------------------
 
-  const sales = csvData
+  const sales = filteredData
     .map((row) => {
-      const value = String(row[metricColumn] ?? "")
+      const value = String(
+        row[metricColumn] ?? ""
+      )
         .replace(/,/g, "")
         .replace(/₹/g, "")
         .replace(/\$/g, "")
@@ -230,10 +288,15 @@ export default function Dashboard() {
   // KPI calculations
   // --------------------------------
 
-  const totalSales = sales.reduce((a, b) => a + b, 0);
+  const totalSales = sales.reduce(
+    (a, b) => a + b,
+    0
+  );
 
   const highestSale =
-    sales.length > 0 ? Math.max(...sales) : 0;
+    sales.length > 0
+      ? Math.max(...sales)
+      : 0;
 
   const averageSale =
     sales.length > 0
@@ -251,19 +314,13 @@ export default function Dashboard() {
   };
 
   // --------------------------------
-  // Normalize data for existing charts
-  //
-  // This is important.
-  //
-  // Your existing charts expect:
-  // row.Sales
-  //
-  // We create Sales dynamically from whatever
-  // numeric column was detected.
+  // Normalize data for charts
   // --------------------------------
 
-  const dashboardData = csvData.map((row) => {
-    const value = String(row[metricColumn] ?? "")
+  const dashboardData = filteredData.map((row) => {
+    const value = String(
+      row[metricColumn] ?? ""
+    )
       .replace(/,/g, "")
       .replace(/₹/g, "")
       .replace(/\$/g, "")
@@ -277,30 +334,28 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <div className="min-h-screen bg-gray-100 px-3 sm:px-5 md:px-6 lg:px-8 py-5 sm:py-6 lg:py-8">
 
-      {/* Header */}
+      <div className="max-w-7xl mx-auto w-full">
 
-      <div className="max-w-7xl mx-auto">
+        {/* Header */}
 
-        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
+        <div className="mb-6 sm:mb-8">
 
-          <div>
-            <h1 className="text-4xl font-bold text-blue-600">
-              Analytics Dashboard
-            </h1>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-blue-600 leading-tight">
+            Analytics Dashboard
+          </h1>
 
-            <p className="text-gray-500 mt-2">
-              Automatically analyzing your uploaded dataset
-            </p>
-          </div>
+          <p className="text-gray-500 mt-2 text-sm sm:text-base">
+            Automatically analyzing your uploaded dataset
+          </p>
 
         </div>
 
         {/* Dataset Selector */}
 
         {datasets.length > 0 && (
-          <div className="mb-8">
+          <div className="mb-5 sm:mb-8">
             <DatasetSelector
               datasets={datasets}
               selectedId={selectedDataset?._id || ""}
@@ -309,38 +364,48 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Dataset information */}
+        {/* Dataset Information */}
 
-        <div className="bg-white rounded-xl shadow p-5 mb-8">
+        <div className="bg-white rounded-xl shadow p-4 sm:p-5 mb-5 sm:mb-8">
 
-          <div className="flex flex-col md:flex-row md:justify-between gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
 
-            <div>
-              <p className="text-sm text-gray-500">
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm text-gray-500">
                 Current Dataset
               </p>
 
-              <p className="text-xl font-bold">
-                {selectedDataset?.fileName || "Dataset"}
+              <p
+                className="text-base sm:text-lg lg:text-xl font-bold truncate"
+                title={
+                  selectedDataset?.fileName ||
+                  "Dataset"
+                }
+              >
+                {selectedDataset?.fileName ||
+                  "Dataset"}
               </p>
             </div>
 
-            <div>
-              <p className="text-sm text-gray-500">
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm text-gray-500">
                 Detected Metric
               </p>
 
-              <p className="text-xl font-bold text-blue-600">
+              <p
+                className="text-base sm:text-lg lg:text-xl font-bold text-blue-600 truncate"
+                title={metricColumn}
+              >
                 {metricColumn}
               </p>
             </div>
 
             <div>
-              <p className="text-sm text-gray-500">
+              <p className="text-xs sm:text-sm text-gray-500">
                 Numeric Columns
               </p>
 
-              <p className="text-xl font-bold">
+              <p className="text-base sm:text-lg lg:text-xl font-bold">
                 {numericColumns.length}
               </p>
             </div>
@@ -349,9 +414,53 @@ export default function Dashboard() {
 
         </div>
 
+        {/* FILTERS */}
+
+        <div className="bg-white rounded-xl shadow p-4 sm:p-5 mb-5 sm:mb-8">
+
+          <Filters
+            data={csvData}
+            filters={filters}
+            onChange={handleFilterChange}
+          />
+
+        </div>
+
+        {/* Filter result information */}
+
+        {Object.values(filters).some(Boolean) && (
+          <div className="mb-5 sm:mb-8 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+
+              <p className="text-sm text-blue-700">
+                Showing{" "}
+                <span className="font-bold">
+                  {filteredData.length}
+                </span>{" "}
+                of{" "}
+                <span className="font-bold">
+                  {csvData.length}
+                </span>{" "}
+                records
+              </p>
+
+              <button
+                type="button"
+                onClick={() => setFilters({})}
+                className="text-sm font-semibold text-blue-600 hover:text-blue-800 self-start sm:self-auto"
+              >
+                Clear all filters
+              </button>
+
+            </div>
+
+          </div>
+        )}
+
         {/* KPI Cards */}
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 lg:gap-6 mb-5 sm:mb-8">
 
           <KPICard
             title={`Total ${metricColumn}`}
@@ -376,7 +485,7 @@ export default function Dashboard() {
 
           <KPICard
             title="Records"
-            value={csvData.length}
+            value={filteredData.length}
             icon={<FaDatabase />}
             color="text-orange-600"
           />
@@ -385,39 +494,52 @@ export default function Dashboard() {
 
         {/* Charts */}
 
-        <div className="grid lg:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 lg:gap-6 mb-5 sm:mb-8">
 
-          <LineChartCard
-            data={dashboardData}
-          />
+          <div className="min-w-0">
+            <LineChartCard
+              data={dashboardData}
+              metricKey="Sales"
+            />
+          </div>
 
-          <PieChartCard
-            data={dashboardData}
-          />
+          <div className="min-w-0">
+            <PieChartCard
+              data={dashboardData}
+              metricKey="Sales"
+            />
+          </div>
 
         </div>
 
         {/* Table & Filters */}
 
-        <div className="grid lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6 mb-5 sm:mb-8">
 
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 min-w-0">
             <RecentUploads
               data={dashboardData}
+              metricKey="Sales"
             />
           </div>
 
-          <Filters />
+          <div className="min-w-0">
+            {/* Extra filter space intentionally left out */}
+          </div>
 
         </div>
 
         {/* AI Insights */}
 
-        <AIInsights
-          highestSale={highestSale}
-          averageSale={averageSale}
-          totalRows={csvData.length}
-        />
+        <div className="w-full min-w-0">
+
+          <AIInsights
+            highestSale={highestSale}
+            averageSale={averageSale}
+            totalRows={filteredData.length}
+          />
+
+        </div>
 
       </div>
 
