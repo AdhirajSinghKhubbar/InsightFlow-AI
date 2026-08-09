@@ -31,7 +31,10 @@ function getRows(data) {
   );
 }
 
-function findMetricKey(data, preferredKey) {
+function findMetricKey(
+  data,
+  preferredKey
+) {
   const rows = getRows(data);
 
   if (!rows.length) return null;
@@ -62,10 +65,13 @@ function findMetricKey(data, preferredKey) {
     if (!values.length) continue;
 
     const numericCount = values.filter(
-      (value) => parseNumeric(value) !== null
+      (value) =>
+        parseNumeric(value) !== null
     ).length;
 
-    if (numericCount / values.length >= 0.5) {
+    if (
+      numericCount / values.length >= 0.5
+    ) {
       return key;
     }
   }
@@ -98,7 +104,7 @@ function findCategoryKey(
 
   const keys = Object.keys(rows[0]);
 
-  // First look for a good categorical column
+  // First look for categorical columns
   for (const key of keys) {
     if (key === metricKey) continue;
 
@@ -165,10 +171,11 @@ function buildDistribution(
     );
   });
 
-  const sorted = [...grouped.entries()].sort(
-    (a, b) => b[1] - a[1]
-  );
+  const sorted = [
+    ...grouped.entries(),
+  ].sort((a, b) => b[1] - a[1]);
 
+  // Keep the pie chart readable
   if (sorted.length > 8) {
     const top = sorted.slice(0, 7);
 
@@ -179,7 +186,10 @@ function buildDistribution(
         0
       );
 
-    top.push(["Other", otherValue]);
+    top.push([
+      "Other",
+      otherValue,
+    ]);
 
     return top.map(([name, value]) => ({
       name,
@@ -200,10 +210,8 @@ export default function PieChartCard({
 }) {
   const rows = getRows(data);
 
-  const actualMetricKey = findMetricKey(
-    rows,
-    metricKey
-  );
+  const actualMetricKey =
+    findMetricKey(rows, metricKey);
 
   const actualCategoryKey =
     findCategoryKey(
@@ -212,77 +220,109 @@ export default function PieChartCard({
       categoryKey
     );
 
-  const chartData = buildDistribution(
-    rows,
-    actualCategoryKey,
-    actualMetricKey
-  );
+  const chartData =
+    buildDistribution(
+      rows,
+      actualCategoryKey,
+      actualMetricKey
+    );
 
   const metricLabel =
-    formatColumnLabel(actualMetricKey) ||
-    "Value";
+    formatColumnLabel(
+      actualMetricKey
+    ) || "Value";
 
   const categoryLabel =
-    formatColumnLabel(actualCategoryKey) ||
-    "Category";
+    formatColumnLabel(
+      actualCategoryKey
+    ) || "Category";
 
   return (
-    <div className="w-full">
-      <h2 className="text-xl font-bold mb-6">
-        {actualCategoryKey
-          ? `${metricLabel} Distribution by ${categoryLabel}`
-          : `${metricLabel} Distribution`}
-      </h2>
+    <div className="bg-white rounded-xl shadow p-4 sm:p-5 lg:p-6 w-full min-w-0 overflow-hidden">
+
+      <div className="mb-4">
+        <h2 className="text-lg sm:text-xl font-bold leading-tight">
+          {actualCategoryKey
+            ? `${metricLabel} Distribution by ${categoryLabel}`
+            : `${metricLabel} Distribution`}
+        </h2>
+
+        <p className="text-xs sm:text-sm text-gray-500 mt-1">
+          Category breakdown
+        </p>
+      </div>
 
       {chartData.length === 0 ? (
-        <div className="h-[320px] flex items-center justify-center text-gray-500 text-center px-4">
+        <div className="h-[280px] sm:h-[320px] flex items-center justify-center text-gray-500 text-center px-4">
           No suitable categorical data
           available for distribution.
         </div>
       ) : (
-        <ResponsiveContainer
-          width="100%"
-          height={320}
-        >
-          <PieChart>
-            <Pie
-              data={chartData}
-              dataKey="value"
-              nameKey="name"
-              outerRadius={105}
-              label={({ name, percent }) =>
-                `${name} ${(
-                  percent * 100
-                ).toFixed(0)}%`
-              }
-            >
-              {chartData.map(
-                (entry, index) => (
-                  <Cell
-                    key={`${entry.name}-${index}`}
-                    fill={
-                      COLORS[
-                        index % COLORS.length
-                      ]
-                    }
-                  />
-                )
-              )}
-            </Pie>
+        <div className="w-full min-w-0">
 
-            <Tooltip
-              formatter={(value) => [
-                Number(value).toLocaleString(
-                  "en-IN"
-                ),
-                metricLabel,
-              ]}
-            />
+          <ResponsiveContainer
+            width="100%"
+            height={340}
+          >
+            <PieChart>
 
-            <Legend />
-          </PieChart>
-        </ResponsiveContainer>
+              <Pie
+                data={chartData}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="42%"
+                outerRadius="55%"
+                innerRadius="0%"
+                paddingAngle={2}
+                stroke="#ffffff"
+                strokeWidth={2}
+              >
+
+                {chartData.map(
+                  (entry, index) => (
+                    <Cell
+                      key={`${entry.name}-${index}`}
+                      fill={
+                        COLORS[
+                          index %
+                            COLORS.length
+                        ]
+                      }
+                    />
+                  )
+                )}
+
+              </Pie>
+
+              <Tooltip
+                formatter={(value, name) => [
+                  Number(value).toLocaleString(
+                    "en-IN"
+                  ),
+                  name,
+                ]}
+              />
+
+              <Legend
+                verticalAlign="bottom"
+                align="center"
+                layout="horizontal"
+                iconType="circle"
+                wrapperStyle={{
+                  fontSize: "12px",
+                  paddingTop: "12px",
+                  lineHeight: "20px",
+                  width: "100%",
+                }}
+              />
+
+            </PieChart>
+          </ResponsiveContainer>
+
+        </div>
       )}
+
     </div>
   );
 }
