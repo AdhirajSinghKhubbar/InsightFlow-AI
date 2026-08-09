@@ -54,42 +54,54 @@ export default function RecentUploads({
   );
 
   return (
-    <div className="w-full">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold">
+    <div className="bg-white rounded-xl shadow p-4 sm:p-5 lg:p-6 w-full min-w-0">
+
+      {/* Header */}
+
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+
+        <h2 className="text-lg sm:text-xl font-bold">
           Recent Records
         </h2>
 
-        <span className="text-sm text-gray-500">
+        <span className="text-xs sm:text-sm text-gray-500">
           Showing{" "}
           {Math.min(rows.length, 5)} of{" "}
           {rows.length}
         </span>
+
       </div>
 
       {rows.length === 0 ? (
-        <p className="text-gray-500">
-          No records available.
-        </p>
+        <div className="py-10 text-center">
+          <p className="text-gray-500">
+            No records available.
+          </p>
+        </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        <div className="overflow-x-auto w-full">
+
+          <table className="w-full min-w-[600px]">
+
             <thead>
               <tr className="border-b">
+
                 {columns.map((column) => (
                   <th
                     key={column}
-                    className="text-left p-2 whitespace-nowrap text-sm font-semibold text-gray-600"
+                    className="text-left p-2 sm:p-3 whitespace-nowrap text-xs sm:text-sm font-semibold text-gray-600"
                   >
                     {formatColumnLabel(
                       column
                     )}
                   </th>
                 ))}
+
               </tr>
             </thead>
 
             <tbody>
+
               {rows
                 .slice(0, 5)
                 .map((row, index) => (
@@ -97,23 +109,29 @@ export default function RecentUploads({
                     key={`row-${index}`}
                     className="border-b last:border-b-0 hover:bg-gray-50"
                   >
+
                     {columns.map(
                       (column) => (
                         <td
                           key={`${index}-${column}`}
-                          className="p-2 whitespace-nowrap"
+                          className="p-2 sm:p-3 whitespace-nowrap text-xs sm:text-sm"
                         >
                           {row?.[column] ??
                             "—"}
                         </td>
                       )
                     )}
+
                   </tr>
                 ))}
+
             </tbody>
+
           </table>
+
         </div>
       )}
+
     </div>
   );
 }
