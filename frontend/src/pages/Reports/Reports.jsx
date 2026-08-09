@@ -56,10 +56,16 @@ export default function Reports() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex justify-center items-center bg-gray-100">
-        <h1 className="text-3xl font-bold text-blue-600">
-          Loading Reports...
-        </h1>
+      <div className="min-h-screen bg-gray-100 px-4 sm:px-6 lg:px-8 py-8">
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+
+            <h1 className="text-xl sm:text-2xl font-bold text-blue-600">
+              Loading Reports...
+            </h1>
+          </div>
+        </div>
       </div>
     );
   }
@@ -70,20 +76,20 @@ export default function Reports() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-100 p-8">
-        <div className="max-w-6xl mx-auto">
+      <div className="min-h-screen bg-gray-100 px-3 sm:px-5 md:px-6 lg:px-8 py-5 sm:py-8">
+        <div className="max-w-6xl mx-auto w-full">
 
-          <h1 className="text-4xl font-bold text-blue-600 mb-8">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-blue-600 mb-5 sm:mb-8">
             AI Reports
           </h1>
 
-          <div className="bg-white rounded-xl shadow-lg p-10 text-center">
+          <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8 lg:p-10 text-center">
 
-            <h2 className="text-2xl font-bold text-red-600">
+            <h2 className="text-xl sm:text-2xl font-bold text-red-600">
               {error}
             </h2>
 
-            <p className="text-gray-500 mt-3">
+            <p className="text-gray-500 mt-3 text-sm sm:text-base">
               Please check that the backend is running and try again.
             </p>
 
@@ -99,23 +105,39 @@ export default function Reports() {
   // =========================
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <div className="min-h-screen bg-gray-100 px-3 sm:px-5 md:px-6 lg:px-8 py-5 sm:py-6 lg:py-8">
 
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto w-full">
 
-        <h1 className="text-4xl font-bold text-blue-600 mb-8">
-          AI Reports
-        </h1>
+        {/* Header */}
+
+        <div className="mb-5 sm:mb-8">
+
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-blue-600 leading-tight">
+            AI Reports
+          </h1>
+
+          <p className="text-gray-500 mt-2 text-sm sm:text-base">
+            View and manage your generated AI reports
+          </p>
+
+        </div>
+
+        {/* No Reports */}
 
         {reports.length === 0 ? (
 
-          <div className="bg-white rounded-xl shadow-lg p-10 text-center">
+          <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8 lg:p-10 text-center">
 
-            <h2 className="text-2xl font-bold">
+            <div className="text-4xl sm:text-5xl mb-4">
+              📊
+            </div>
+
+            <h2 className="text-xl sm:text-2xl font-bold">
               No Reports Found
             </h2>
 
-            <p className="text-gray-500 mt-3">
+            <p className="text-gray-500 mt-3 text-sm sm:text-base">
               Generate an AI report first.
             </p>
 
@@ -123,53 +145,69 @@ export default function Reports() {
 
         ) : (
 
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
 
             {reports.map((report) => (
 
               <div
                 key={report._id}
-                className="bg-white rounded-xl shadow-lg p-6 flex flex-col md:flex-row md:justify-between md:items-center"
+                className="bg-white rounded-xl shadow-lg p-4 sm:p-6"
               >
 
-                <div>
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
 
-                  <h2 className="text-2xl font-bold">
-                    📄{" "}
-                    {report.datasetId?.fileName ||
-                      "Unknown Dataset"}
-                  </h2>
+                  {/* Report Information */}
 
-                  <p className="text-gray-500 mt-2">
-                    Generated:{" "}
-                    {new Date(
-                      report.createdAt
-                    ).toLocaleString()}
-                  </p>
+                  <div className="min-w-0 flex-1">
 
-                  <p className="mt-2 text-blue-600 font-semibold">
-                    {report.aiModel}
-                  </p>
+                    <h2
+                      className="text-lg sm:text-xl lg:text-2xl font-bold break-words"
+                      title={
+                        report.datasetId?.fileName ||
+                        "Unknown Dataset"
+                      }
+                    >
+                      📄{" "}
+                      {report.datasetId?.fileName ||
+                        "Unknown Dataset"}
+                    </h2>
 
-                </div>
+                    <p className="text-gray-500 mt-2 text-xs sm:text-sm break-words">
+                      Generated:{" "}
+                      {report.createdAt
+                        ? new Date(
+                            report.createdAt
+                          ).toLocaleString()
+                        : "Unknown date"}
+                    </p>
 
-                <div className="flex gap-3 mt-5 md:mt-0">
+                    <p className="mt-2 text-blue-600 font-semibold text-sm sm:text-base break-words">
+                      {report.aiModel || "AI Model"}
+                    </p>
 
-                  <Link
-                    to={`/report/${report._id}`}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg transition"
-                  >
-                    View
-                  </Link>
+                  </div>
 
-                  <button
-                    onClick={() =>
-                      deleteReport(report._id)
-                    }
-                    className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg transition"
-                  >
-                    Delete
-                  </button>
+                  {/* Buttons */}
+
+                  <div className="flex flex-col xs:flex-row sm:flex-row gap-2 sm:gap-3 w-full lg:w-auto">
+
+                    <Link
+                      to={`/report/${report._id}`}
+                      className="w-full sm:w-auto text-center bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg transition text-sm sm:text-base font-medium"
+                    >
+                      View
+                    </Link>
+
+                    <button
+                      onClick={() =>
+                        deleteReport(report._id)
+                      }
+                      className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-lg transition text-sm sm:text-base font-medium"
+                    >
+                      Delete
+                    </button>
+
+                  </div>
 
                 </div>
 
