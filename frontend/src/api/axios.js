@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:5001/api",
+  baseURL: "https://insightflow-ai-backend-fb3o.onrender.com/api",
 });
 
 API.interceptors.request.use((config) => {
@@ -15,3 +15,4 @@ API.interceptors.request.use((config) => {
 });
 
 export default API;
+
