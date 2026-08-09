@@ -15,6 +15,7 @@ export default function ReportDetails() {
   // ================================
   // Fetch Report
   // ================================
+
   useEffect(() => {
     fetchReport();
   }, [id]);
@@ -38,6 +39,7 @@ export default function ReportDetails() {
   // ================================
   // Download Markdown
   // ================================
+
   function downloadMarkdown() {
     if (!report) return;
 
@@ -88,6 +90,7 @@ ${report.report || "No report content available."}
   // ================================
   // Download PDF
   // ================================
+
   function downloadPDF() {
     if (!report) return;
 
@@ -100,33 +103,48 @@ ${report.report || "No report content available."}
     const datasetName =
       report.datasetId?.fileName || "AI Report";
 
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
+    const pageWidth =
+      pdf.internal.pageSize.getWidth();
+
+    const pageHeight =
+      pdf.internal.pageSize.getHeight();
 
     const margin = 15;
-    const usableWidth = pageWidth - margin * 2;
+
+    const usableWidth =
+      pageWidth - margin * 2;
 
     let y = 20;
 
     // ================================
     // Title
     // ================================
+
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(20);
 
-    pdf.text("InsightFlow AI", margin, y);
+    pdf.text(
+      "InsightFlow AI",
+      margin,
+      y
+    );
 
     y += 10;
 
     pdf.setFontSize(15);
 
-    pdf.text("AI Business Report", margin, y);
+    pdf.text(
+      "AI Business Report",
+      margin,
+      y
+    );
 
     y += 12;
 
     // ================================
     // Report Information
     // ================================
+
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(10);
 
@@ -163,6 +181,7 @@ ${report.report || "No report content available."}
     // ================================
     // Divider
     // ================================
+
     pdf.line(
       margin,
       y,
@@ -175,7 +194,12 @@ ${report.report || "No report content available."}
     // ================================
     // Report Content
     // ================================
-    pdf.setFont("helvetica", "normal");
+
+    pdf.setFont(
+      "helvetica",
+      "normal"
+    );
+
     pdf.setFontSize(10);
 
     const cleanReport = (
@@ -183,27 +207,56 @@ ${report.report || "No report content available."}
       "No report content available."
     )
       .replace(/^#{1,6}\s*/gm, "")
-      .replace(/\*\*(.*?)\*\*/g, "$1")
-      .replace(/\*(.*?)\*/g, "$1")
-      .replace(/`(.*?)`/g, "$1")
-      .replace(/^[-*]\s+/gm, "• ")
-      .replace(/^\d+\.\s+/gm, "")
-      .replace(/\n{3,}/g, "\n\n");
+      .replace(
+        /\*\*(.*?)\*\*/g,
+        "$1"
+      )
+      .replace(
+        /\*(.*?)\*/g,
+        "$1"
+      )
+      .replace(
+        /`(.*?)`/g,
+        "$1"
+      )
+      .replace(
+        /^[-*]\s+/gm,
+        "• "
+      )
+      .replace(
+        /^\d+\.\s+/gm,
+        ""
+      )
+      .replace(
+        /\n{3,}/g,
+        "\n\n"
+      );
 
-    const lines = pdf.splitTextToSize(
-      cleanReport,
-      usableWidth
-    );
+    const lines =
+      pdf.splitTextToSize(
+        cleanReport,
+        usableWidth
+      );
 
-    for (let i = 0; i < lines.length; i++) {
-      // New page when necessary
-      if (y > pageHeight - 20) {
+    for (
+      let i = 0;
+      i < lines.length;
+      i++
+    ) {
+      if (
+        y >
+        pageHeight - 20
+      ) {
         pdf.addPage();
 
         y = 20;
       }
 
-      pdf.text(lines[i], margin, y);
+      pdf.text(
+        lines[i],
+        margin,
+        y
+      );
 
       y += 5;
     }
@@ -211,6 +264,7 @@ ${report.report || "No report content available."}
     // ================================
     // Footer
     // ================================
+
     const totalPages =
       pdf.internal.getNumberOfPages();
 
@@ -245,10 +299,12 @@ ${report.report || "No report content available."}
     // ================================
     // Save PDF
     // ================================
-    const fileName = `${datasetName.replace(
-      /\.[^/.]+$/,
-      ""
-    )}-AI-Report.pdf`;
+
+    const fileName =
+      `${datasetName.replace(
+        /\.[^/.]+$/,
+        ""
+      )}-AI-Report.pdf`;
 
     pdf.save(fileName);
   }
@@ -256,12 +312,19 @@ ${report.report || "No report content available."}
   // ================================
   // Loading
   // ================================
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <h1 className="text-3xl font-bold text-blue-600">
-          Loading Report...
-        </h1>
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
+        <div className="bg-white rounded-xl shadow-lg p-8 sm:p-10 text-center w-full max-w-md">
+          <div className="animate-pulse">
+            <div className="h-4 bg-gray-200 rounded w-32 mx-auto mb-4"></div>
+
+            <h1 className="text-xl sm:text-2xl font-bold text-blue-600">
+              Loading Report...
+            </h1>
+          </div>
+        </div>
       </div>
     );
   }
@@ -269,20 +332,29 @@ ${report.report || "No report content available."}
   // ================================
   // Report Not Found
   // ================================
+
   if (!report) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="bg-white rounded-xl shadow-lg p-10 text-center">
-          <h1 className="text-3xl font-bold text-red-600">
-            Report Not Found
-          </h1>
+      <div className="min-h-screen bg-gray-100 px-4 py-6 sm:py-10">
+        <div className="max-w-3xl mx-auto">
+          <div className="bg-white rounded-xl shadow-lg p-6 sm:p-10 text-center">
+            <h1 className="text-2xl sm:text-3xl font-bold text-red-600">
+              Report Not Found
+            </h1>
 
-          <button
-            onClick={() => navigate("/reports")}
-            className="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg"
-          >
-            ← Back to Reports
-          </button>
+            <p className="text-gray-500 mt-3 text-sm sm:text-base">
+              The requested report could not be found.
+            </p>
+
+            <button
+              onClick={() =>
+                navigate("/reports")
+              }
+              className="mt-6 w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition"
+            >
+              ← Back to Reports
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -295,83 +367,101 @@ ${report.report || "No report content available."}
   // ================================
   // Main UI
   // ================================
+
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gray-100 px-3 sm:px-5 md:px-6 lg:px-8 py-5 sm:py-7 lg:py-10">
+      <div className="max-w-7xl mx-auto w-full min-w-0">
 
         {/* ============================
             Header
         ============================ */}
-        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
 
-          <div>
-            <h1 className="text-4xl font-bold text-blue-600">
-              AI Business Report
-            </h1>
+        <div className="mb-6 sm:mb-8">
 
-            <p className="text-gray-500 mt-2">
-              Generated from your uploaded dataset
-            </p>
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+
+            <div className="min-w-0">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-blue-600 leading-tight">
+                AI Business Report
+              </h1>
+
+              <p className="text-gray-500 mt-2 text-sm sm:text-base">
+                Generated from your uploaded dataset
+              </p>
+            </div>
+
+            {/* Buttons */}
+
+            <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+
+              <button
+                onClick={() =>
+                  navigate("/reports")
+                }
+                className="w-full sm:w-auto bg-gray-600 hover:bg-gray-700 text-white px-5 py-3 rounded-lg font-semibold transition text-sm sm:text-base"
+              >
+                ← Back
+              </button>
+
+              <button
+                onClick={downloadPDF}
+                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg font-semibold transition text-sm sm:text-base"
+              >
+                ↓ Download PDF
+              </button>
+
+            </div>
+
           </div>
 
-          <div className="flex flex-wrap gap-3">
-
-            <button
-              onClick={() => navigate("/reports")}
-              className="bg-gray-600 hover:bg-gray-700 text-white px-5 py-3 rounded-lg font-semibold transition"
-            >
-              ← Back
-            </button>
-
-            <button
-              onClick={downloadPDF}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg font-semibold transition"
-            >
-              ↓ Download PDF
-            </button>
-
-          </div>
         </div>
 
         {/* ============================
             Report Information
         ============================ */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 lg:gap-6 mb-6 sm:mb-8">
 
           {/* Dataset */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
 
-            <p className="text-gray-500 text-sm">
+          <div className="bg-white rounded-xl shadow-lg p-5 sm:p-6 min-w-0">
+
+            <p className="text-gray-500 text-xs sm:text-sm">
               Dataset
             </p>
 
-            <p className="text-xl font-bold text-blue-600 mt-2 break-words">
+            <p
+              className="text-base sm:text-lg lg:text-xl font-bold text-blue-600 mt-2 break-words"
+              title={datasetName}
+            >
               📄 {datasetName}
             </p>
 
           </div>
 
           {/* AI Model */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
 
-            <p className="text-gray-500 text-sm">
+          <div className="bg-white rounded-xl shadow-lg p-5 sm:p-6 min-w-0">
+
+            <p className="text-gray-500 text-xs sm:text-sm">
               AI Model
             </p>
 
-            <p className="text-xl font-bold text-purple-600 mt-2">
+            <p className="text-base sm:text-lg lg:text-xl font-bold text-purple-600 mt-2 break-words">
               🤖 {report.aiModel || "AI"}
             </p>
 
           </div>
 
           {/* Generated */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
 
-            <p className="text-gray-500 text-sm">
+          <div className="bg-white rounded-xl shadow-lg p-5 sm:p-6 min-w-0 md:col-span-2 xl:col-span-1">
+
+            <p className="text-gray-500 text-xs sm:text-sm">
               Generated
             </p>
 
-            <p className="text-xl font-bold text-orange-600 mt-2">
+            <p className="text-base sm:text-lg lg:text-xl font-bold text-orange-600 mt-2 break-words">
               {report.createdAt
                 ? new Date(
                     report.createdAt
@@ -386,35 +476,163 @@ ${report.report || "No report content available."}
         {/* ============================
             AI Report
         ============================ */}
-        <div className="bg-white rounded-xl shadow-xl p-8">
 
-          <div className="flex justify-between items-center mb-6">
+        <div className="bg-white rounded-xl shadow-xl overflow-hidden min-w-0">
 
-            <h2 className="text-2xl font-bold">
-              AI Analysis
-            </h2>
+          {/* Report Header */}
 
-            <button
-              onClick={downloadPDF}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold"
-            >
-              📄 Download PDF
-            </button>
+          <div className="px-4 sm:px-6 lg:px-8 py-5 sm:py-6 border-b">
+
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold">
+                  AI Analysis
+                </h2>
+
+                <p className="text-gray-500 text-xs sm:text-sm mt-1">
+                  AI-generated analysis of your dataset
+                </p>
+              </div>
+
+              <button
+                onClick={downloadPDF}
+                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-semibold transition text-sm"
+              >
+                📄 Download PDF
+              </button>
+
+            </div>
 
           </div>
 
-          <div className="prose prose-lg max-w-none">
+          {/* Report Content */}
 
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
+          <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 min-w-0 overflow-hidden">
+
+            <div
+              className="
+                prose
+                prose-sm
+                sm:prose-base
+                lg:prose-lg
+                max-w-none
+                break-words
+
+                prose-headings:font-bold
+                prose-headings:text-gray-900
+                prose-h1:text-2xl
+                sm:prose-h1:text-3xl
+                prose-h2:text-xl
+                sm:prose-h2:text-2xl
+                prose-h3:text-lg
+                sm:prose-h3:text-xl
+
+                prose-p:text-gray-700
+                prose-p:leading-7
+
+                prose-li:text-gray-700
+                prose-li:leading-7
+
+                prose-strong:text-gray-900
+
+                prose-a:text-blue-600
+                prose-a:break-words
+
+                prose-table:text-sm
+              "
             >
-              {
-                report.report ||
-                "No report content available."
-              }
-            </ReactMarkdown>
+
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+
+                  // Prevent tables from breaking mobile layout
+                  table: ({
+                    children,
+                  }) => (
+                    <div className="w-full overflow-x-auto my-6 rounded-lg border">
+                      <table className="min-w-[600px] w-full">
+                        {children}
+                      </table>
+                    </div>
+                  ),
+
+                  // Better mobile code blocks
+                  pre: ({
+                    children,
+                  }) => (
+                    <pre className="overflow-x-auto max-w-full rounded-lg bg-gray-900 p-4 text-sm">
+                      {children}
+                    </pre>
+                  ),
+
+                  // Prevent long text from overflowing
+                  code: ({
+                    children,
+                  }) => (
+                    <code className="break-words">
+                      {children}
+                    </code>
+                  ),
+
+                  // Better list spacing
+                  ul: ({
+                    children,
+                  }) => (
+                    <ul className="my-4 pl-5">
+                      {children}
+                    </ul>
+                  ),
+
+                  ol: ({
+                    children,
+                  }) => (
+                    <ol className="my-4 pl-5">
+                      {children}
+                    </ol>
+                  ),
+
+                  // Better blockquotes
+                  blockquote: ({
+                    children,
+                  }) => (
+                    <blockquote className="border-l-4 border-blue-500 pl-4 my-5 text-gray-600">
+                      {children}
+                    </blockquote>
+                  ),
+
+                }}
+              >
+                {report.report ||
+                  "No report content available."}
+              </ReactMarkdown>
+
+            </div>
 
           </div>
+
+        </div>
+
+        {/* Bottom action */}
+
+        <div className="mt-5 sm:mt-6 flex flex-col sm:flex-row gap-3">
+
+          <button
+            onClick={() =>
+              navigate("/reports")
+            }
+            className="w-full sm:w-auto bg-gray-600 hover:bg-gray-700 text-white px-5 py-3 rounded-lg font-semibold transition"
+          >
+            ← Back to Reports
+          </button>
+
+          <button
+            onClick={downloadMarkdown}
+            className="w-full sm:w-auto bg-gray-800 hover:bg-gray-900 text-white px-5 py-3 rounded-lg font-semibold transition"
+          >
+            ↓ Download Markdown
+          </button>
 
         </div>
 
