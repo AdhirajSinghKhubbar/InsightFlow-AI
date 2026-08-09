@@ -67,12 +67,12 @@ export default function Dashboard() {
     setSelectedDataset(dataset);
     setCsvData(dataset.data || []);
 
-    // Reset filters when dataset changes
+    // Clear filters when dataset changes
     setFilters({});
   }
 
   // --------------------------------
-  // Filter change
+  // Handle filters
   // --------------------------------
 
   function handleFilterChange(key, value) {
@@ -81,8 +81,8 @@ export default function Dashboard() {
       return;
     }
 
-    setFilters((previous) => ({
-      ...previous,
+    setFilters((previousFilters) => ({
+      ...previousFilters,
       [key]: value,
     }));
   }
@@ -173,9 +173,7 @@ export default function Dashboard() {
   ];
 
   let metricColumn = numericColumns.find((column) =>
-    preferredNames.includes(
-      column.toLowerCase().trim()
-    )
+    preferredNames.includes(column.toLowerCase().trim())
   );
 
   if (!metricColumn && numericColumns.length > 0) {
@@ -240,29 +238,37 @@ export default function Dashboard() {
   }
 
   // --------------------------------
-  // APPLY FILTERS
+  // Apply filters
   // --------------------------------
 
   const filteredData = csvData.filter((row) => {
-    return Object.entries(filters).every(
-      ([key, selectedValue]) => {
-        if (!selectedValue) return true;
+    return Object.entries(filters).every(([key, selectedValue]) => {
+      if (!selectedValue) return true;
 
-        const rowValue = row?.[key];
+      const rowValue = row?.[key];
 
-        if (
-          rowValue === undefined ||
-          rowValue === null
-        ) {
-          return false;
-        }
-
-        return (
-          String(rowValue).trim() ===
-          String(selectedValue).trim()
-        );
+      if (
+        rowValue === undefined ||
+        rowValue === null
+      ) {
+        return false;
       }
-    );
+
+      const rowString = String(rowValue).trim();
+      const filterString = String(selectedValue).trim();
+
+      // Date filters
+      // Handles values like:
+      // 2026-08-09
+      // 2026-08-09T10:30:00
+      if (
+        filterString.match(/^\d{4}-\d{2}-\d{2}$/)
+      ) {
+        return rowString.startsWith(filterString);
+      }
+
+      return rowString === filterString;
+    });
   });
 
   // --------------------------------
@@ -271,9 +277,7 @@ export default function Dashboard() {
 
   const sales = filteredData
     .map((row) => {
-      const value = String(
-        row[metricColumn] ?? ""
-      )
+      const value = String(row[metricColumn] ?? "")
         .replace(/,/g, "")
         .replace(/₹/g, "")
         .replace(/\$/g, "")
@@ -318,9 +322,7 @@ export default function Dashboard() {
   // --------------------------------
 
   const dashboardData = filteredData.map((row) => {
-    const value = String(
-      row[metricColumn] ?? ""
-    )
+    const value = String(row[metricColumn] ?? "")
       .replace(/,/g, "")
       .replace(/₹/g, "")
       .replace(/\$/g, "")
@@ -377,13 +379,9 @@ export default function Dashboard() {
 
               <p
                 className="text-base sm:text-lg lg:text-xl font-bold truncate"
-                title={
-                  selectedDataset?.fileName ||
-                  "Dataset"
-                }
+                title={selectedDataset?.fileName || "Dataset"}
               >
-                {selectedDataset?.fileName ||
-                  "Dataset"}
+                {selectedDataset?.fileName || "Dataset"}
               </p>
             </div>
 
@@ -413,50 +411,6 @@ export default function Dashboard() {
           </div>
 
         </div>
-
-        {/* FILTERS */}
-
-        <div className="bg-white rounded-xl shadow p-4 sm:p-5 mb-5 sm:mb-8">
-
-          <Filters
-            data={csvData}
-            filters={filters}
-            onChange={handleFilterChange}
-          />
-
-        </div>
-
-        {/* Filter result information */}
-
-        {Object.values(filters).some(Boolean) && (
-          <div className="mb-5 sm:mb-8 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
-
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-
-              <p className="text-sm text-blue-700">
-                Showing{" "}
-                <span className="font-bold">
-                  {filteredData.length}
-                </span>{" "}
-                of{" "}
-                <span className="font-bold">
-                  {csvData.length}
-                </span>{" "}
-                records
-              </p>
-
-              <button
-                type="button"
-                onClick={() => setFilters({})}
-                className="text-sm font-semibold text-blue-600 hover:text-blue-800 self-start sm:self-auto"
-              >
-                Clear all filters
-              </button>
-
-            </div>
-
-          </div>
-        )}
 
         {/* KPI Cards */}
 
@@ -516,6 +470,8 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6 mb-5 sm:mb-8">
 
+          {/* Recent Records */}
+
           <div className="lg:col-span-2 min-w-0">
             <RecentUploads
               data={dashboardData}
@@ -523,22 +479,46 @@ export default function Dashboard() {
             />
           </div>
 
+          {/* Filters */}
+
           <div className="min-w-0">
-            {/* Extra filter space intentionally left out */}
+            <Filters
+              data={csvData}
+              filters={filters}
+              onChange={handleFilterChange}
+            />
           </div>
 
         </div>
 
+        {/* Filter Status */}
+
+        {Object.values(filters).some(Boolean) && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 mb-5 sm:mb-8">
+
+            <p className="text-sm text-blue-700">
+              Showing{" "}
+              <span className="font-bold">
+                {filteredData.length}
+              </span>{" "}
+              of{" "}
+              <span className="font-bold">
+                {csvData.length}
+              </span>{" "}
+              records after filtering.
+            </p>
+
+          </div>
+        )}
+
         {/* AI Insights */}
 
         <div className="w-full min-w-0">
-
           <AIInsights
             highestSale={highestSale}
             averageSale={averageSale}
             totalRows={filteredData.length}
           />
-
         </div>
 
       </div>
