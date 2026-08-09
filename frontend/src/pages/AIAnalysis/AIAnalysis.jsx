@@ -59,7 +59,7 @@ export default function AIAnalysis() {
         If your existing backend uses a different AI-analysis
         endpoint, keep that endpoint instead.
       */
-      const response = await API.post(`/analysis/${id}`);
+      const response = await API.get(`/ai/${id}`);;
 
       console.log("AI Analysis Response:", response.data);
 

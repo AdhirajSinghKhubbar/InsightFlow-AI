@@ -39,7 +39,7 @@ export default function Upload() {
       const token = localStorage.getItem("token");
 
       const response = await axios.post(
-        "http://localhost:5001/api/upload",
+        "https://insightflow-ai-backend-fb3o.onrender.com/api/upload",
         formData,
         {
           headers: {
